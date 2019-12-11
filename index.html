@@ -1,1 +1,159 @@
-<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href=/favicon.ico><title>test_1</title><script src=http://localhost:8098></script><link href=/css/app.e2713bb0.css rel=preload as=style><link href=/js/app.8e97ee9e.js rel=preload as=script><link href=/js/chunk-vendors.3d4cd4b5.js rel=preload as=script><link href=/css/app.e2713bb0.css rel=stylesheet></head><body><noscript><strong>We're sorry but test_1 doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id=app></div><script src=/js/chunk-vendors.3d4cd4b5.js></script><script src=/js/app.8e97ee9e.js></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>测试视频</title>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* #mse,
+    #example {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    } */
+
+    #switch,
+    #gyro {
+      position: fixed;
+      top: 20px;
+      left: 50px;
+      z-index: 9999;
+      font-size: 20px;
+      padding: 10px;
+    }
+
+    #gyro {
+      left: 150px;
+    }
+  </style>
+</head>
+
+<body>
+  <button id="switch">切换</button>
+  <button id="gyro">开关</button>
+  <div id="example"></div>
+  <div id="mse"></div>
+  <script src="./js/three.min.js"></script>
+  <script src="./js/mxreality.js"></script>
+  <script src="./js/ptools.js"></script>
+  <script src="./js/xgplayer.js"></script>
+  <script src="./js/xgplayer-hls.js"></script>
+  <script>
+    window.onload = function () {
+      let toggle = false
+      const el = document.getElementById('switch')
+      let player = null
+      el.onclick = () => {
+        toggle = !toggle
+        if (toggle) {
+          document.getElementById('gyro').style.display = 'block'
+          document.getElementById('example').style.display = 'block'
+          document.getElementById('mse').style.display = 'none'
+          init()
+        } else {
+          document.getElementById('gyro').style.display = 'none'
+          document.getElementById('example').style.display = 'none'
+          document.getElementById('example').innerHTML = ''
+          document.getElementById('mse').style.display = 'block'
+          document.body.style.overflow = 'visible'
+          initXg()
+        }
+      }
+      initXg()
+      function initXg() {
+        document.getElementById('gyro').style.display = 'none'
+        console.log('player', player)
+        if (player && typeof player.destroy === 'function') {
+          player.destroy()
+        }
+        player = null
+        setTimeout(() => {
+          player = new HlsJsPlayer({
+            id: 'mse',
+            url:
+              'http://wshls.live.migucloud.com/live/7JU0LNQG_C0/playlist.m3u8',
+            // 'http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8',
+            'playsinline': true,
+            'webkit-playsinline': true,
+            'x5-playsinline': true,
+            'x5-video-player-type': 'h5',
+            'x5-video-player-fullscreen': 'false',
+            'x5-video-orientation': 'portraint',
+            fluid: true,
+            autoplay: true,
+            loop: true,
+            controls: true
+          })
+        }, 0)
+      }
+    }
+    //var vr=new VR(scene,renderer,container);
+    function init() {
+      var scene, renderer
+      var container
+      //renderer = new THREE.WebGLRenderer();
+      AVR.debug = true
+      if (!AVR.Broswer.isIE() && AVR.Broswer.webglAvailable()) {
+        renderer = new THREE.WebGLRenderer()
+      } else {
+        renderer = new THREE.CanvasRenderer()
+      }
+      renderer.setPixelRatio(window.devicePixelRatio)
+      container = document.getElementById('example')
+      container.appendChild(renderer.domElement)
+
+      scene = new THREE.Scene()
+
+      // fov 选项可调整初始视频远近
+      var vr = new VR(scene, renderer, container, { fov: 50 })
+
+      //vr.playText="<img src='img/play90.png' width='40' height='40'/>";
+      vr.vrbox.radius = 600
+      if (AVR.isCrossScreen()) {
+        // 调整vr视窗偏移量
+        vr.effect.separation = 1.2
+      }
+      vr.loadProgressManager.onLoad = function () {
+        // 视频静音
+        vr.video.muted = true
+        vr.VRObject.getObjectByName('__mxrealityDefault').visible = true
+      }
+      //AVR.useGyroscope=false;
+      vr.init(function () { })
+
+      // vr.playPanorama('http://jingcai.cdn-vipkkyun.com/20190827/1295_6bddbad0/index.m3u8?sign=1a71f26fca4c9680c93d10010a165d1a',vr.resType.sliceVideo);
+      vr.playPanorama(
+        'http://wshls.live.migucloud.com/live/7JU0LNQG_C0/playlist.m3u8',
+        // 'http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8',
+        vr.resType.sliceVideo
+      )
+      vr.video.setAttribute('loop', 'loop')
+      vr.video.crossOrigin = 'Anonymous'
+
+      vr.video.onended = function () { }
+
+      let isOn = false
+      const gyro = document.getElementById('gyro')
+      gyro.onclick = () => {
+        isOn = !isOn
+        if (isOn) {
+          vr.controls.gyroUnfreeze()
+        } else {
+          vr.controls.gyroFreeze()
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
